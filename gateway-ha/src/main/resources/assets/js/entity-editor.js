@@ -35,7 +35,7 @@ function renderConfigSelector() {
         + "</div> <div id='entityEditorBottom'></div>";
 
     $("#entity-editor-place-holder").html(html);
-    submitData("/admin/entity", "", "get").done(function (data) {
+    submitData("/entity", "", "get").done(function (data) {
         var select = "<option value='select'>Select</option>";
         for (var i in data) {
             select += "<option value='" + data[i] + "'>" + data[i] + "</option>";
@@ -52,7 +52,7 @@ function renderEntitySelector() {
     entityData = "";
 
     if (entityType !== 'select') {
-        submitData("/admin/entity/" + entityType, "", "get").done(function (data) {
+        submitData("/entity/" + entityType, "", "get").done(function (data) {
             entityData = data;
             var select = "<option value='select'>Select</option>";
             for (var i in data) {
@@ -101,7 +101,7 @@ function renderEntityEditor() {
 function updateObject() {
     var entityType = $("#entityTypeSelector").find(':selected').val();
     var jsonVal = JSON.stringify(editor.get());
-    submitData("/admin/entity?entityType=" + entityType, jsonVal, "post").done(function (data) {
+    submitData("/entity?entityType=" + entityType, jsonVal, "post").done(function (data) {
         console.log(data);
         renderEntitySelector();
     })

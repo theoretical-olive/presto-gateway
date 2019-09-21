@@ -1,11 +1,8 @@
-package com.lyft.data.gateway;
+package com.lyft.data.gateway.ha;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.lyft.data.gateway.config.ProxyBackendConfiguration;
-import java.io.IOException;
-import java.util.Arrays;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -15,43 +12,34 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class TestPrestoGatewaySingleBackend {
+public class TestGatewayHaSingleBackend {
   public static final String EXPECTED_RESPONSE = "{\"id\":\"testId\"}";
   int backendPort = 20000 + (int) (Math.random() * 1000);
   int routerPort = 21000 + (int) (Math.random() * 1000);
 
   private WireMockServer backend =
       new WireMockServer(WireMockConfiguration.options().port(backendPort));
+  private final OkHttpClient httpClient = new OkHttpClient();
 
   @BeforeClass(alwaysRun = true)
   public void setup() throws Exception {
-    backend.start();
-    backend.stubFor(
-        WireMock.post("/v1/statement")
-            .willReturn(
-                WireMock.aResponse()
-                    .withBody(EXPECTED_RESPONSE)
-                    .withHeader("Content-Encoding", "plain")
-                    .withStatus(200)));
+    HaGatewayTestUtils.prepareMockBackend(backend, "/v1/statement", EXPECTED_RESPONSE);
 
+    // seed database
+    HaGatewayTestUtils.TestConfig testConfig =
+        HaGatewayTestUtils.buildGatewayConfigAndSeedDb(routerPort);
     // Start Gateway
-    ProxyBackendConfiguration proxyBackendConfiguration =
-        GatewayTestUtil.getProxyBackendConfiguration(
-            "adhoc1", "adhoc", backendPort, 22000 + (int) (Math.random() * 1000));
-    String configPath =
-        GatewayTestUtil.buildGatewayConfigPath(
-            routerPort, Arrays.asList(proxyBackendConfiguration));
-    String[] args = {"server", configPath};
-    GatewayLauncher.main(args);
-
-
-
+    String[] args = {"server", testConfig.getConfigFilePath()};
+    HaGatewayLauncher.main(args);
+    // Now populate the backend
+    HaGatewayTestUtils.setUpBackend(
+        "presto1", "http://localhost:" + backendPort, true, "adhoc", routerPort);
   }
 
   @Test
   public void testRequestDelivery() throws Exception {
-    OkHttpClient httpClient = new OkHttpClient();
-    RequestBody requestBody = RequestBody.create(GatewayTestUtil.JSON, "SELECT 1");
+    RequestBody requestBody =
+        RequestBody.create(MediaType.parse("application/json; charset=utf-8"), "SELECT 1");
     Request request =
         new Request.Builder()
             .url("http://localhost:" + routerPort + "/v1/statement")
@@ -62,7 +50,7 @@ public class TestPrestoGatewaySingleBackend {
   }
 
   @AfterClass(alwaysRun = true)
-  public void cleanup() throws IOException {
+  public void cleanup() {
     backend.stop();
   }
 }
