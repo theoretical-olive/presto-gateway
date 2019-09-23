@@ -18,9 +18,9 @@ Now you can access load balanced presto at localhost:8080 port. We will refer to
 PrestoGateway records history of recent queries and displays links to check query details page in respective presto cluster.  
 ![prestogateway.lyft.com](../docs/assets/prestogateway_query_history.png) 
 
-### Gateway Admin UI - add and modify backend information
-The Gateway admin page is used to configure the gateway to multiple backends. Existing backend information can also be modified using the same.
-![prestogateway.lyft.com/admin](../docs/assets/prestogateway_ha_admin.png) 
+### Gateway entity UI - add and modify backend information
+The Gateway entity page is used to configure the gateway to multiple backends. Existing backend information can also be modified using the same.
+![prestogateway.lyft.com/entity](../docs/assets/prestogateway_ha_admin.png) 
 
 How to setup a dev environment
 ----------------------------

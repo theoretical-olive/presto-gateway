@@ -95,6 +95,11 @@
             <artifactId>ehcache</artifactId>
             <version>${ehcache.version}</version>
         </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>${mysqlconnector.version}</version>
+        </dependency>
         <!-- Test deps -->
         <dependency>
             <groupId>org.testng</groupId>
@@ -188,13 +193,6 @@
                     <configFile>${project.basedir}/src/migrations/database.properties</configFile>
                     <environments>${environments}</environments>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>mysql</groupId>
-                        <artifactId>mysql-connector-java</artifactId>
-                        <version>${mysqlconnector.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>
